@@ -16,3 +16,7 @@ const posts: Post[] = [
 export const getPosts = () => {
   return posts
 }
+
+export const getPostById = (id: number) => {
+  return posts.find((item) => item.id === id)
+}

@@ -12,7 +12,7 @@ const goListPage = () => {
 
 <template>
   <div>
-    <h2 class="mt-4">게시글 등록</h2>
+    <h2 c>게시글 등록</h2>
     <hr class="my-4" />
     <form @submit.prevent="">
       <div class="mb-3">
