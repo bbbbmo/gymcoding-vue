@@ -26,7 +26,7 @@ const router = createRouter({
     },
     {
       path: '/posts',
-      name: 'postList ',
+      name: 'postList',
       component: PostListView,
     },
     {

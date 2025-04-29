@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import { getPostById, type Post } from '@/api/post'
-import { ref } from 'vue'
-
+import { getPostById, type Post, deletePost } from '@/api/post'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 const props = defineProps<{
   id: number
 }>()
+
+const router = useRouter()
 
 type Button = {
   text: string
   variant: string
   to?: string
+  onClick?: () => Promise<void>
 }
 
-const form = ref<Post>({} as Post)
+const post = ref<Post>({} as Post)
+const setPost = (data: Post) => {
+  post.value = { ...data }
+  console.log(post.value)
+}
 
 const leftButtons: Button[] = [
   {
@@ -39,25 +46,44 @@ const rightButtons: Button[] = [
   {
     text: '삭제',
     variant: 'btn-outline-danger',
+    onClick: async () => {
+      try {
+        if (confirm('정말 삭제하시겠습니까?') === false) {
+          return
+        }
+        await deletePost(props.id)
+        router.push({ name: 'postList' })
+      } catch (error) {
+        console.error(error)
+      }
+    },
   },
 ]
 
-const fetchPost = () => {
-  const data = getPostById(props.id) as Post
-  form.value = { ...data }
-  // form.title = data.title
-  // form.content = data.content
-  // form.createdAt = data.createdAt <- reactive를 사용 시 이렇게 해야함, 그냥 { ...data } 대입 시 반응형을 잃어버림
+const fetchPost = async () => {
+  try {
+    const { data } = await getPostById(props.id)
+    setPost(data)
+  } catch (error) {
+    console.error(error)
+  }
+  // post.title = data.title
+  // post.content = data.content
+  // post.createdAt = data.createdAt <- reactive를 사용 시 이렇게 해야함, 그냥 { ...data } 대입 시 반응형을 잃어버림
 }
 
-fetchPost()
+onMounted(() => {
+  fetchPost()
+})
 </script>
 
 <template>
   <div>
-    <h2>{{ form.title }}</h2>
-    <p>{{ form.content }}</p>
-    <p class="text-muted">{{ form.createdAt }}</p>
+    <h2>{{ post.title }}</h2>
+    <p>{{ post.content }}</p>
+    <p class="text-muted">
+      {{ post.createdAt ? new Date(post.createdAt).toLocaleDateString() : '-' }}
+    </p>
     <hr class="my-4" />
     <div class="row g-2">
       <div class="col-auto" v-for="button in leftButtons" :key="button.text">
@@ -68,7 +94,14 @@ fetchPost()
         <RouterLink v-if="button.to" :to="button.to" class="btn" :class="button.variant">{{
           button.text
         }}</RouterLink>
-        <button v-else class="btn" :class="button.variant">{{ button.text }}</button>
+        <button
+          v-else
+          class="btn"
+          :class="button.variant"
+          @click="button.onClick && button.onClick()"
+        >
+          {{ button.text }}
+        </button>
       </div>
     </div>
   </div>

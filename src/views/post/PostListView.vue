@@ -7,10 +7,14 @@ import PostDetailView from '@/views/post/PostDetailView.vue'
 import AppCard from '@/components/AppCard.vue'
 
 const router = useRouter()
-const posts = ref<Post[]>(getPosts())
+const posts = ref<Post[]>([])
 
-const fetchPost = () => {
-  posts.value = getPosts()
+const fetchPost = async () => {
+  try {
+    ;({ data: posts.value } = await getPosts())
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 fetchPost()
@@ -39,7 +43,7 @@ const goPage = (id: number) => {
           :title="post.title"
           :content="post.content"
           :createdAt="post.createdAt"
-          @click="goPage(post.id)"
+          @click="goPage(post.id ?? 0)"
         />
       </div>
     </div>
