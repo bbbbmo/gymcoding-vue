@@ -32,7 +32,7 @@ export const createPost = (data: Post) => {
 }
 
 export const updatePost = (id: string | number, data: Pick<Post, 'title' | 'content'>) => {
-  return posts.put(`/${id}`, data)
+  return posts.patch(`/${id}`, data)
 }
 
 export const deletePost = (id: string | number) => {
