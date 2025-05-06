@@ -3,7 +3,7 @@ import { getPostById, type Post, deletePost } from '@/api/post'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 const props = defineProps<{
-  id: number
+  id: string | number
 }>()
 
 const router = useRouter()

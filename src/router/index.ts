@@ -40,9 +40,7 @@ const router = createRouter({
       component: PostDetailView,
       //props: true, // id값이 props로 전달됨
       //props: { word: 'hello' }, // 객체로 전달 가능
-      props: (route) => ({
-        id: Number(route.params.id),
-      }),
+      props: true,
     },
     {
       path: '/posts/:id/edit',

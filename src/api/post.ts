@@ -1,29 +1,40 @@
-import axios from 'axios'
+/**
+ * @description 게시글 API
+ */
 
-// axios 인스턴스 생성
+import { posts } from './index'
+
 export type Post = {
-  id?: number
+  id?: number | string
   title: string
   content: string
   createdAt: Date | string
 }
 
-export const getPosts = () => {
-  return axios.get('http://localhost:5000/posts')
+export type Options = {
+  _sort?: string
+  _order?: string
+  _page?: number
+  _limit?: number
+  title_like?: string
 }
 
-export const getPostById = (id: number) => {
-  return axios.get(`http://localhost:5000/posts/${id}`)
+export const getPosts = (params?: Options) => {
+  return posts.get('/', { params })
+}
+
+export const getPostById = (id: string | number) => {
+  return posts.get(`/${id}`)
 }
 
 export const createPost = (data: Post) => {
-  return axios.post('http://localhost:5000/posts', data)
+  return posts.post('/', data)
 }
 
-export const updatePost = (id: number, data: Pick<Post, 'title' | 'content'>) => {
-  return axios.put(`http://localhost:5000/posts/${id}`, data)
+export const updatePost = (id: string | number, data: Pick<Post, 'title' | 'content'>) => {
+  return posts.put(`/${id}`, data)
 }
 
-export const deletePost = (id: number) => {
-  return axios.delete(`http://localhost:5000/posts/${id}`)
+export const deletePost = (id: string | number) => {
+  return posts.delete(`/${id}`)
 }

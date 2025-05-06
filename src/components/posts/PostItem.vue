@@ -10,7 +10,7 @@ defineProps({
     required: true,
   },
   createdAt: {
-    type: [String, Date, Number],
+    type: [String],
     required: true,
   },
 })
@@ -22,6 +22,6 @@ defineProps({
     <p class="card-text">
       {{ content }}
     </p>
-    <p class="text-muted">{{ createdAt }}</p>
+    <p class="text-muted">{{ createdAt.split('T')[0] }}</p>
   </AppCard>
 </template>
