@@ -7,11 +7,9 @@ import { getPosts, type Post, type Options } from '@/api/post'
 import { computed, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import PostDetailView from '@/views/post/PostDetailView.vue'
-import AppCard from '@/components/AppCard.vue'
-import AppPagination from '@/components/AppPagination.vue'
-import AppGrid from '@/components/AppGrid.vue'
-import PostFilter from '@/components/posts/PostFilter.vue'
 
+import PostFilter from '@/components/posts/PostFilter.vue'
+import PostModal from '@/components/posts/PostModal.vue'
 const router = useRouter()
 const posts = ref<Post[]>([])
 // 페이지네이션
@@ -22,12 +20,24 @@ const options = ref<Options>({
   _limit: 3,
   title_like: '',
 })
-// ---------
-
 const totalCount = ref<number>(0)
 const pageCount = computed((): number => {
   return Math.ceil(totalCount.value / (options.value._limit ?? 3))
 })
+// ---------
+// 모달
+const show = ref<boolean>(false)
+const modalTitle = ref<string>('')
+const modalContent = ref<string>('')
+const modalCreatedAt = ref<string>('')
+// ---------
+
+const openModal = (item: Post) => {
+  show.value = true
+  modalTitle.value = item.title
+  modalContent.value = item.content
+  modalCreatedAt.value = item.createdAt
+}
 
 const currentPage = computed({
   get: () => options.value._page ?? 1,
@@ -82,6 +92,7 @@ watchEffect(async () => {
           :content="item.content"
           :createdAt="item.createdAt"
           @click="goPage(String(item.id ?? ''))"
+          @modal="openModal(item)"
         />
       </template>
     </AppGrid>
@@ -89,8 +100,18 @@ watchEffect(async () => {
     <AppPagination
       :current-page="currentPage"
       :page-count="pageCount"
-      @update:current-page="(page) => (currentPage = page)"
+      @update:current-page="(page: number) => (currentPage = page)"
     />
+
+    <Teleport to="#modal">
+      <PostModal
+        v-model="show"
+        :title="modalTitle"
+        :content="modalContent"
+        :created-at="modalCreatedAt"
+      />
+    </Teleport>
+
     <template v-if="posts && posts.length > 0">
       <hr class="my-5" />
       <AppCard>

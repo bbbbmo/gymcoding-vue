@@ -8,7 +8,7 @@ export type Post = {
   id?: number | string
   title: string
   content: string
-  createdAt: Date | string
+  createdAt: string
 }
 
 export type Options = {

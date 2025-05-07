@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { getPostById, type Post, updatePost } from '@/api/post'
-import PostForm from '@/components/posts/PostForm.vue'
+import type { AlertType } from '@/components/app/AppAlert.vue'
+
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
@@ -14,13 +15,25 @@ const form = ref<Pick<Post, 'title' | 'content'>>({
   content: '',
 })
 
+const alerts = ref<
+  {
+    message: string
+    type: AlertType
+  }[]
+>([])
+
 const setForm = (data: Post) => {
   form.value = { ...data }
 }
 
 const fetchPost = async () => {
-  const { data } = await getPostById(postId)
-  setForm(data)
+  try {
+    const { data } = await getPostById(postId)
+    setForm(data)
+  } catch (error) {
+    console.error(error)
+    vAlert(error instanceof Error ? error.message : String(error))
+  }
 }
 
 fetchPost()
@@ -29,10 +42,13 @@ const edit = async () => {
   try {
     await updatePost(postId, { ...form.value })
     goDetailPage()
+    vAlert('수정이 완료되었습니다!', 'success')
   } catch (error) {
     console.error(error)
+    vAlert(error instanceof Error ? error.message : String(error))
   }
 }
+
 const goDetailPage = () => {
   router.push({
     name: 'postDetail',
@@ -40,6 +56,17 @@ const goDetailPage = () => {
       id: postId,
     },
   })
+}
+
+const vAlert = (message: string, type?: AlertType) => {
+  alerts.value.push({
+    message,
+    type: type || 'error',
+  })
+
+  setTimeout(() => {
+    alerts.value.shift()
+  }, 2000)
 }
 </script>
 
@@ -54,6 +81,7 @@ const goDetailPage = () => {
       </template>
     </PostForm>
   </div>
+  <AppAlert :items="alerts" />
 </template>
 
 <style scoped></style>

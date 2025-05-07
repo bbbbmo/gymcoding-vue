@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AppCard from '@/components/AppCard.vue'
 defineProps({
   title: {
     type: String,
@@ -14,6 +13,10 @@ defineProps({
     required: true,
   },
 })
+
+defineEmits<{
+  (e: 'modal'): void
+}>()
 </script>
 
 <template>
@@ -22,6 +25,13 @@ defineProps({
     <p class="card-text">
       {{ content }}
     </p>
-    <p class="text-muted">{{ createdAt.split('T')[0] }}</p>
+    <p class="text-muted">{{ $dayjs(createdAt).format('YYYY-MM-DD') }}</p>
+    <template #footer>
+      <div class="d-flex justify-content-end">
+        <button class="btn p-0" @click.stop="$emit('modal')">
+          <i class="bi bi-arrow-up-right-square"></i>
+        </button>
+      </div>
+    </template>
   </AppCard>
 </template>
