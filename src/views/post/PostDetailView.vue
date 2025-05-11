@@ -1,25 +1,46 @@
 <script setup lang="ts">
-import { getPostById, type Post, deletePost } from '@/api/post'
-import { ref, onMounted } from 'vue'
+import type { Post } from '@/api/post'
+import useAlert from '@/composables/useAlert'
+import { useAxios } from '@/composables/useAxios'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+
 const props = defineProps<{
   id: string | number
 }>()
-
-const router = useRouter()
 
 type Button = {
   text: string
   variant: string
   to?: string
-  onClick?: () => Promise<void>
+  onClick?: () => void
 }
 
-const post = ref<Post>({} as Post)
-const setPost = (data: Post) => {
-  post.value = { ...data }
-  console.log(post.value)
-}
+const router = useRouter()
+const url = computed<string>(() => `/posts/${props.id}`)
+const { vAlert, vSuccess } = useAlert()
+
+const { data: post, loading, error } = useAxios(url.value)
+
+const {
+  error: deleteError,
+  loading: deleteLoading,
+  execute,
+} = useAxios<Post>(
+  `/posts/${props.id}`,
+  { method: 'delete' },
+  {
+    immediate: false,
+    onSuccess: () => {
+      vSuccess('삭제가 완료되었습니다.')
+      router.push({ name: 'postList' })
+    },
+    onError: (err) => {
+      vAlert(err.message)
+      deleteError.value = err
+    },
+  },
+)
 
 const leftButtons: Button[] = [
   {
@@ -46,43 +67,22 @@ const rightButtons: Button[] = [
   {
     text: '삭제',
     variant: 'btn-outline-danger',
-    onClick: async () => {
-      try {
-        if (confirm('정말 삭제하시겠습니까?') === false) {
-          return
-        }
-        await deletePost(props.id)
-        router.push({ name: 'postList' })
-      } catch (error) {
-        console.error(error)
-      }
-    },
+    onClick: () => execute({}),
   },
 ]
-
-const fetchPost = async () => {
-  try {
-    const { data } = await getPostById(props.id)
-    setPost(data)
-  } catch (error) {
-    console.error(error)
-  }
-  // post.title = data.title
-  // post.content = data.content
-  // post.createdAt = data.createdAt <- reactive를 사용 시 이렇게 해야함, 그냥 { ...data } 대입 시 반응형을 잃어버림
-}
-
-onMounted(() => {
-  fetchPost()
-})
 </script>
 
 <template>
-  <div>
-    <h2>{{ post.title }}</h2>
-    <p>{{ post.content }}</p>
+  <AppLoading v-if="loading" />
+
+  <AppError v-else-if="error" :message="error.message" />
+
+  <div v-else>
+    <AppError v-if="deleteError" :message="deleteError.message" />
+    <h2>{{ post?.title }}</h2>
+    <p>{{ post?.content }}</p>
     <p class="text-muted">
-      {{ $dayjs(post.createdAt).format('YYYY-MM-DD HH:mm:ss') }}
+      {{ $dayjs(post?.createdAt).format('YYYY-MM-DD HH:mm:ss') }}
     </p>
     <hr class="my-4" />
     <div class="row g-2">
@@ -99,8 +99,13 @@ onMounted(() => {
           class="btn"
           :class="button.variant"
           @click="button.onClick && button.onClick()"
+          :disabled="deleteLoading"
         >
-          {{ button.text }}
+          <template v-if="deleteLoading">
+            <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+            <span class="visually-hidden" role="status">Loading...</span>
+          </template>
+          <template v-else> {{ button.text }} </template>
         </button>
       </div>
     </div>

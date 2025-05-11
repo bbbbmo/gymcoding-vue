@@ -28,7 +28,7 @@ const typeStyle = (type: AlertType) => {
     <div
       v-for="({ message, type }, index) in items"
       :key="index"
-      class="alert"
+      class="alert app-alert"
       :class="typeStyle(type)"
       role="alert"
     >

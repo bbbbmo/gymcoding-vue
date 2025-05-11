@@ -3,15 +3,16 @@
  * @description 게시글 목록 페이지
  */
 import PostItem from '@/components/posts/PostItem.vue'
-import { getPosts, type Post, type Options } from '@/api/post'
-import { computed, ref, watchEffect } from 'vue'
+import { type Post, type Options } from '@/api/post'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import PostDetailView from '@/views/post/PostDetailView.vue'
 
 import PostFilter from '@/components/posts/PostFilter.vue'
 import PostModal from '@/components/posts/PostModal.vue'
+import { useAxios } from '@/composables/useAxios'
+
 const router = useRouter()
-const posts = ref<Post[]>([])
 // 페이지네이션
 const options = ref<Options>({
   _sort: 'createdAt',
@@ -20,7 +21,13 @@ const options = ref<Options>({
   _limit: 3,
   title_like: '',
 })
-const totalCount = ref<number>(0)
+const {
+  response,
+  data: posts,
+  error,
+  loading,
+} = useAxios('/posts', { method: 'get', params: options })
+const totalCount = computed(() => response.value?.headers['x-total-count'])
 const pageCount = computed((): number => {
   return Math.ceil(totalCount.value / (options.value._limit ?? 3))
 })
@@ -52,26 +59,8 @@ const goPage = (id: string) => {
     params: {
       id,
     },
-    query: {
-      searchText: 'test',
-    },
-    hash: '#test',
   })
 }
-
-const fetchPost = async () => {
-  try {
-    const { data, headers } = await getPosts(options.value)
-    posts.value = data
-    totalCount.value = Number(headers['x-total-count'])
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-watchEffect(async () => {
-  await fetchPost()
-})
 </script>
 
 <template>
@@ -85,23 +74,30 @@ watchEffect(async () => {
       @update:limit="(limit) => (options._limit = limit)"
     />
     <hr class="my-4" />
-    <AppGrid :items="posts">
-      <template v-slot="{ item }">
-        <PostItem
-          :title="item.title"
-          :content="item.content"
-          :createdAt="item.createdAt"
-          @click="goPage(String(item.id ?? ''))"
-          @modal="openModal(item)"
-        />
-      </template>
-    </AppGrid>
 
-    <AppPagination
-      :current-page="currentPage"
-      :page-count="pageCount"
-      @update:current-page="(page: number) => (currentPage = page)"
-    />
+    <AppLoading v-if="loading" />
+
+    <AppError v-else-if="error" :message="error.message" />
+
+    <template v-else>
+      <AppGrid :items="posts">
+        <template v-slot="{ item }">
+          <PostItem
+            :title="item.title"
+            :content="item.content"
+            :createdAt="item.createdAt"
+            @click="goPage(String(item.id ?? ''))"
+            @modal="openModal(item)"
+          />
+        </template>
+      </AppGrid>
+
+      <AppPagination
+        :current-page="currentPage"
+        :page-count="pageCount"
+        @update:current-page="(page: number) => (currentPage = page)"
+      />
+    </template>
 
     <Teleport to="#modal">
       <PostModal

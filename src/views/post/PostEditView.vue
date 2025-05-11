@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { getPostById, type Post, updatePost } from '@/api/post'
-import type { AlertType } from '@/components/app/AppAlert.vue'
-
-import { ref } from 'vue'
+import useAlert from '@/composables/useAlert'
+import { useAxios } from '@/composables/useAxios'
 import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
 
@@ -10,43 +8,32 @@ const router = useRouter()
 const route = useRoute()
 
 const postId = route.params.id as string
-const form = ref<Pick<Post, 'title' | 'content'>>({
-  title: '',
-  content: '',
-})
 
-const alerts = ref<
+const { vSuccess, vAlert } = useAlert()
+
+const { data: form, error, loading } = useAxios(`/posts/${postId}`)
+
+const {
+  loading: editLoading,
+  error: editError,
+  execute,
+} = useAxios(
+  `/posts/${postId}`,
+  { method: 'patch' },
   {
-    message: string
-    type: AlertType
-  }[]
->([])
-
-const setForm = (data: Post) => {
-  form.value = { ...data }
-}
-
-const fetchPost = async () => {
-  try {
-    const { data } = await getPostById(postId)
-    setForm(data)
-  } catch (error) {
-    console.error(error)
-    vAlert(error instanceof Error ? error.message : String(error))
-  }
-}
-
-fetchPost()
+    immediate: false,
+    onSuccess: () => {
+      vSuccess('수정이 완료되었습니다!')
+      goDetailPage()
+    },
+    onError: (err) => {
+      vAlert(err.message)
+    },
+  },
+)
 
 const edit = async () => {
-  try {
-    await updatePost(postId, { ...form.value })
-    goDetailPage()
-    vAlert('수정이 완료되었습니다!', 'success')
-  } catch (error) {
-    console.error(error)
-    vAlert(error instanceof Error ? error.message : String(error))
-  }
+  execute({ ...form.value })
 }
 
 const goDetailPage = () => {
@@ -57,31 +44,29 @@ const goDetailPage = () => {
     },
   })
 }
-
-const vAlert = (message: string, type?: AlertType) => {
-  alerts.value.push({
-    message,
-    type: type || 'error',
-  })
-
-  setTimeout(() => {
-    alerts.value.shift()
-  }, 2000)
-}
 </script>
 
 <template>
-  <div>
+  <AppLoading v-if="loading" />
+
+  <AppError v-else-if="error" :message="error.message" />
+  <div v-else>
     <h2>게시글 수정</h2>
     <hr class="my-4" />
+    <AppError v-if="editError" :message="editError.message" />
     <PostForm @submit.prevent="edit" v-model:title="form.title" v-model:content="form.content">
       <template #actions>
         <button type="button" class="btn btn-outline-danger" @click="goDetailPage">취소</button>
-        <button class="btn btn-primary">수정</button>
+        <button class="btn btn-primary" :disabled="editLoading">
+          <template v-if="editLoading">
+            <span class="spinner-grow spinner-grow-sm" aria-hidden="true"></span>
+            <span class="visually-hidden" role="status">Loading...</span>
+          </template>
+          <template v-else> 수정 </template>
+        </button>
       </template>
     </PostForm>
   </div>
-  <AppAlert :items="alerts" />
 </template>
 
 <style scoped></style>
