@@ -7,12 +7,12 @@ import { type Post, type Options } from '@/api/post'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import PostDetailView from '@/views/post/PostDetailView.vue'
-
 import PostFilter from '@/components/posts/PostFilter.vue'
 import PostModal from '@/components/posts/PostModal.vue'
 import { useAxios } from '@/composables/useAxios'
 
 const router = useRouter()
+const previewId = ref<string | null>(null)
 // 페이지네이션
 const options = ref<Options>({
   _sort: 'createdAt',
@@ -61,6 +61,10 @@ const goPage = (id: string) => {
     },
   })
 }
+
+const selectPreview = (id: string) => {
+  previewId.value = id
+}
 </script>
 
 <template>
@@ -88,6 +92,7 @@ const goPage = (id: string) => {
             :createdAt="item.createdAt"
             @click="goPage(String(item.id ?? ''))"
             @modal="openModal(item)"
+            @preview="selectPreview(item.id)"
           />
         </template>
       </AppGrid>
@@ -108,10 +113,10 @@ const goPage = (id: string) => {
       />
     </Teleport>
 
-    <template v-if="posts && posts.length > 0">
+    <template v-if="previewId">
       <hr class="my-5" />
       <AppCard>
-        <PostDetailView :id="String(posts[0].id)" />
+        <PostDetailView :id="previewId" />
       </AppCard>
     </template>
   </div>

@@ -16,6 +16,7 @@ defineProps({
 
 defineEmits<{
   (e: 'modal'): void
+  (e: 'preview'): void
 }>()
 </script>
 
@@ -28,8 +29,11 @@ defineEmits<{
     <p class="text-muted">{{ $dayjs(createdAt).format('YYYY-MM-DD') }}</p>
     <template #footer>
       <div class="d-flex justify-content-end">
-        <button class="btn p-0" @click.stop="$emit('modal')">
+        <button class="btn p-1" @click.stop="$emit('modal')">
           <i class="bi bi-arrow-up-right-square"></i>
+        </button>
+        <button class="btn p-1" @click.stop="$emit('preview')">
+          <i class="bi bi-search"></i>
         </button>
       </div>
     </template>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import useAlert from '@/composables/useAlert'
+
 /**
  * @description 알림 컴포넌트
  * @param {string} message - 알림 메시지
@@ -6,17 +8,7 @@
  */
 export type AlertType = 'success' | 'error'
 
-withDefaults(
-  defineProps<{
-    items: {
-      message: string
-      type: AlertType
-    }[]
-  }>(),
-  {
-    items: () => [],
-  },
-)
+const { alerts } = useAlert()
 
 const typeStyle = (type: AlertType) => {
   return type === 'error' ? 'alert-danger' : 'alert-primary'
@@ -26,7 +18,7 @@ const typeStyle = (type: AlertType) => {
 <template>
   <TransitionGroup name="slide">
     <div
-      v-for="({ message, type }, index) in items"
+      v-for="({ message, type }, index) in alerts"
       :key="index"
       class="alert app-alert"
       :class="typeStyle(type)"

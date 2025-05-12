@@ -2,8 +2,9 @@
 import type { Post } from '@/api/post'
 import useAlert from '@/composables/useAlert'
 import { useAxios } from '@/composables/useAxios'
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
 import { useRouter } from 'vue-router'
+import { useNumber } from '@/composables/useNumber'
 
 const props = defineProps<{
   id: string | number
@@ -17,6 +18,8 @@ type Button = {
 }
 
 const router = useRouter()
+const id = toRef(props, 'id')
+const { isOdd } = useNumber(Number(id.value))
 const url = computed<string>(() => `/posts/${props.id}`)
 const { vAlert, vSuccess } = useAlert()
 
@@ -80,6 +83,7 @@ const rightButtons: Button[] = [
   <div v-else>
     <AppError v-if="deleteError" :message="deleteError.message" />
     <h2>{{ post?.title }}</h2>
+    <p>id: {{ props.id }}, isOdd: {{ isOdd }}</p>
     <p>{{ post?.content }}</p>
     <p class="text-muted">
       {{ $dayjs(post?.createdAt).format('YYYY-MM-DD HH:mm:ss') }}

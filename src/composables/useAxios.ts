@@ -30,7 +30,7 @@ export function useAxios<T = any>(
 
     try {
       const res = await axios.request<T>({
-        url,
+        url: unref(url),
         ...config,
         params: unref(params),
         data: body,
@@ -46,7 +46,7 @@ export function useAxios<T = any>(
     }
   }
 
-  if (isRef(params)) {
+  if (isRef(params) || isRef(url)) {
     watch(
       () => unref(params),
       () => {
