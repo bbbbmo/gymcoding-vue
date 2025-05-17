@@ -18,7 +18,7 @@ const options = ref<Options>({
   _sort: 'createdAt',
   _order: 'desc',
   _page: 1,
-  _limit: 3,
+  _limit: 6,
   title_like: '',
 })
 const {
@@ -31,6 +31,8 @@ const totalCount = computed(() => response.value?.headers['x-total-count'])
 const pageCount = computed((): number => {
   return Math.ceil(totalCount.value / (options.value._limit ?? 3))
 })
+
+const isExist = computed(() => posts.value && posts.value.length > 0)
 // ---------
 // 모달
 const show = ref<boolean>(false)
@@ -62,6 +64,11 @@ const goPage = (id: string) => {
   })
 }
 
+const chageLimit = (value: number) => {
+  options.value._limit = value
+  options.value._page = 1
+}
+
 const selectPreview = (id: string) => {
   previewId.value = id
 }
@@ -75,7 +82,7 @@ const selectPreview = (id: string) => {
       :title="options.title_like ?? ''"
       :limit="options._limit ?? 3"
       @update:title="(title) => (options.title_like = title)"
-      @update:limit="(limit) => (options._limit = limit)"
+      @update:limit="chageLimit"
     />
     <hr class="my-4" />
 
@@ -83,8 +90,12 @@ const selectPreview = (id: string) => {
 
     <AppError v-else-if="error" :message="error.message" />
 
+    <template v-else-if="!isExist">
+      <p class="text-center py-5 text-muted">No Results</p>
+    </template>
+
     <template v-else>
-      <AppGrid :items="posts">
+      <AppGrid :items="posts" col-class="col-12 col-sm-6 col-md-4 col-lg-3">
         <template v-slot="{ item }">
           <PostItem
             :title="item.title"

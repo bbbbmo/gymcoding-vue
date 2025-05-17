@@ -7,10 +7,18 @@ defineProps<{
   limit: number
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'update:title', value: string): void
   (e: 'update:limit', value: number): void
 }>()
+
+const changeTitle = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  setTimeout(() => {
+    emit('update:title', input.value)
+    console.log(input.value)
+  }, 500)
+}
 </script>
 
 <template>
@@ -21,7 +29,7 @@ defineEmits<{
           type="text"
           class="form-control"
           placeholder="제목으로 검색해주세요."
-          @input="$emit('update:title', ($event.target as HTMLInputElement).value)"
+          @input="changeTitle"
           :value="title"
         />
       </div>
@@ -31,9 +39,9 @@ defineEmits<{
           @input="$emit('update:limit', Number(($event.target as HTMLSelectElement).value))"
           :value="limit"
         >
-          <option value="3">3개씩 보기</option>
           <option value="6">6개씩 보기</option>
-          <option value="9">9개씩 보기</option>
+          <option value="12">12개씩 보기</option>
+          <option value="18">9개씩 보기</option>
         </select>
       </div>
     </div>

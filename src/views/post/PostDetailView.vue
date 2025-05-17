@@ -3,7 +3,7 @@ import type { Post } from '@/api/post'
 import useAlert from '@/composables/useAlert'
 import { useAxios } from '@/composables/useAxios'
 import { computed, toRef } from 'vue'
-import { useRouter } from 'vue-router'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { useNumber } from '@/composables/useNumber'
 
 const props = defineProps<{
@@ -73,6 +73,22 @@ const rightButtons: Button[] = [
     onClick: () => execute({}),
   },
 ]
+
+onBeforeRouteUpdate(() => {
+  console.log('onBeforeRouteUpdate')
+})
+
+onBeforeRouteLeave(() => {
+  console.log('onBeforeRouteLeave')
+})
+</script>
+
+<script lang="ts">
+export default {
+  beforeRouteEnter() {
+    console.log('beforeRouteEnter')
+  },
+}
 </script>
 
 <template>

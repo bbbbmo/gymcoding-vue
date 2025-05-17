@@ -14,7 +14,7 @@ const goPage = () => {
   <header class="mb-4">
     <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">GYM CODING</a>
+        <RouterLink class="navbar-brand" to="/"> GYM CODING </RouterLink>
         <button
           class="navbar-toggler"
           type="button"
@@ -38,9 +38,7 @@ const goPage = () => {
               <RouterLink class="nav-link" active-class="active" to="/posts">게시글</RouterLink>
             </li>
             <li class="nav-item">
-              <RouterLink class="nav-link" active-class="active" to="/nested"
-                >중첩된 라우트</RouterLink
-              >
+              <RouterLink class="nav-link" active-class="active" to="/my">MyPage</RouterLink>
             </li>
           </ul>
           <div class="d-flex" role="search">
